@@ -1,0 +1,21 @@
+sudo: required
+language: generic
+services:
+  - docker
+
+before_install:
+  - docker build -t wojciechkalebasiak/fib_client_test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true wojciechkalebasiak/fib_client_test npm run test -- --coverage
+
+after_success:
+  - docker build -t wojciechkalebasiak/fib_client ./client
+  - docker build -t wojciechkalebasiak/fib_server ./server
+  - docker build -t wojciechkalebasiak/fib_nginx ./nginx
+  - docker build -t wojciechkalebasiak/fib_worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push wojciechkaleb/fib_client
+  - docker push wojciechkaleb/fib_server
+  - docker push wojciechkaleb/fib_nginx
+  - docker push wojciechkaleb/fib_worker
